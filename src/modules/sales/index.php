@@ -61,13 +61,6 @@ $revenue = [
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Sales Management</h2>
-            <div>
-                <?php if ($can_create_sale): ?>
-                <a href="orders/create.php" class="btn btn-primary">
-                    <i class="bi bi-plus-lg"></i> New Sale
-                </a>
-                <?php endif; ?>
-            </div>
         </div>
 
         <!-- Statistics Cards -->
@@ -111,12 +104,10 @@ $revenue = [
                     <div class="card-body">
                         <h5 class="card-title">Quick Actions</h5>
                         <div class="d-flex gap-2">
-                            <a href="orders/index.php" class="btn btn-outline-primary">
+                            <a href="../orders/index.php" class="btn btn-outline-primary">
                                 <i class="bi bi-cart"></i> View All Orders
                             </a>
-                            <a href="orders/create.php" class="btn btn-outline-secondary">
-                                <i class="bi bi-plus-lg"></i> Create Order
-                            </a>
+
                         </div>
                     </div>
                 </div>

@@ -111,8 +111,8 @@ if (!function_exists('isPathActive')) {
 
 <div class="sidebar">
     <div class="sidebar-brand">
-        <a href="/StockManagement/src/modules/dashboard/index.php">
-            <img src="/StockManagement/assets/LOGO.png" alt="NexInvent Logo" class="img-fluid">
+        <a href="/stock/src/modules/dashboard/index.php">
+            <img src="/stock/assets/LOGO.png" alt="NexInvent Logo" class="img-fluid">
         </a>
     </div>
     
@@ -126,10 +126,16 @@ if (!function_exists('isPathActive')) {
                 <a href="../inventory/index.php" class="sidebar-link <?php echo isPathActive('inventory') ? 'active' : ''; ?>">
                     <i class="bi bi-box-seam me-2"></i> Inventory
                 </a>
-                <a href="../products/index.php" class="sidebar-link <?php echo isPathActive('products') || (isPathActive('products', 'categories')) ? 'active' : ''; ?>">
+                <a href="../orders/create.php" class="sidebar-link <?php echo isPathActive('orders') ? 'active' : ''; ?>">
+                    <i class="bi bi-cart4 me-2"></i> Orders
+                </a>    
+                <a href="../categories/index.php" class="sidebar-link <?php echo isPathActive('categories') ? 'active' : ''; ?>">
+                    <i class="bi bi-tags me-2"></i> Categories
+                </a>    
+                <a href="../products/index.php" class="sidebar-link <?php echo isPathActive('products') || (isPathActive('products')) ? 'active' : ''; ?>">
                     <i class="bi bi-cart3 me-2"></i> Products
                 </a>
-                <a href="../sales/index.php" class="sidebar-link <?php echo isPathActive('sales') || (isPathActive('sales', 'orders')) ? 'active' : ''; ?>">
+                <a href="../sales/index.php" class="sidebar-link <?php echo isPathActive('sales') || (isPathActive('sales')) ? 'active' : ''; ?>">
                     <i class="bi bi-graph-up me-2"></i> Sales
                 </a>
                 <a href="../purchases/index.php" class="sidebar-link <?php echo isPathActive('purchases') ? 'active' : ''; ?>">

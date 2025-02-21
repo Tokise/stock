@@ -224,25 +224,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item me-3">
-                        <a class="nav-link" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown">
-                            <div class="cart-icon">
-                                <i class="bi bi-cart3"></i>
-                                <span class="cart-badge">0</span>
-                            </div>
+                        <a class="nav-link position-relative" href="cart.php">
+                            <i class="bi bi-cart3"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge d-none">
+                                0
+                            </span>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end" style="width: 300px;">
-                            <div class="p-3">
-                                <h6 class="mb-0">Shopping Cart</h6>
-                                <hr>
-                                <div class="cart-items">
-                                    <p class="text-muted text-center mb-0">Your cart is empty</p>
-                                </div>
-                                <hr>
-                                <div class="d-grid">
-                                    <a href="cart.php" class="btn btn-primary">View Cart</a>
-                                </div>
-                            </div>
-                        </div>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
@@ -265,4 +252,4 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </ul>
             </div>
         </div>
-    </nav> 
+    </nav>

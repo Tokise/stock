@@ -127,9 +127,13 @@ $products = fetchAll($query, $params);
                                 </div>
                             </div>
                             <div class="card-footer bg-white">
-                                <button type="button" class="btn btn-primary w-100" 
+                                <button type="button" class="btn btn-primary w-100 mb-2" 
                                         onclick="addToCart(<?php echo $product['product_id']; ?>)">
                                     Add to Cart
+                                </button>
+                                <button type="button" class="btn btn-success w-100" 
+                                        onclick="buyNow(<?php echo $product['product_id']; ?>)">
+                                    Buy Now
                                 </button>
                             </div>
                         </div>
@@ -184,14 +188,73 @@ $(document).ready(function() {
     });
 });
 
-function addToCart(productId) {
-    // Implement cart functionality
-    Swal.fire({
-        icon: 'info',
-        title: 'Coming Soon',
-        text: 'Shopping cart functionality will be available soon!'
+function buyNow(productId) {
+    addToCart(productId, 1, function() {
+        window.location.href = 'checkout.php';
     });
 }
+
+function addToCart(productId, quantity = 1, callback = null) {
+    $.ajax({
+        url: 'ajax/cart_handler.php',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            action: 'add',
+            product_id: productId,
+            quantity: quantity
+        },
+        success: function(response) {
+            if (response.success) {
+                updateCartBadge(response.cart_count);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Added to Cart!',
+                    text: response.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    if (callback) callback();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.error || 'Failed to add item to cart'
+                });
+            }
+        },
+        error: function(xhr) {
+            let errorMessage = 'Failed to add item to cart';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+            }
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage
+            });
+        }
+    });
+}
+
+function updateCartBadge(count) {
+    const badge = $('.cart-badge');
+    if (count > 0) {
+        badge.text(count).removeClass('d-none');
+    } else {
+        badge.addClass('d-none');
+    }
+}
+
+// Initialize cart badge on page load
+$(document).ready(function() {
+    $.get('ajax/cart_handler.php', { action: 'get' }, function(response) {
+        if (response.success) {
+            updateCartBadge(response.count);
+        }
+    });
+});
 </script>
 
-<?php require_once 'includes/footer.php'; ?> 
+<?php require_once 'includes/footer.php'; ?>

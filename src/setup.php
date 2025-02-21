@@ -9,45 +9,74 @@ try {
     $conn = getDBConnection();
     echo "Database connection successful!<br><br>";
 
-    // Check if admin user exists
-    $sql = "SELECT COUNT(*) FROM users WHERE username = 'admin'";
-    $adminExists = fetchValue($sql) > 0;
+    // Create test passwords with consistent hashing
+    $admin_password = 'admin123';
+    $customer_password = 'customer123';
+    $hash_admin = password_hash($admin_password, PASSWORD_DEFAULT);
+    $hash_customer = password_hash($customer_password, PASSWORD_DEFAULT);
 
-    if (!$adminExists) {
-        // Create default admin user
-        $password = password_hash('admin123', PASSWORD_DEFAULT);
-        
+    // Reset admin password if exists, create if not
+    $sql = "SELECT user_id FROM users WHERE username = 'admin'";
+    $admin = fetchOne($sql);
+
+    if ($admin) {
+        // Update existing admin password
+        $sql = "UPDATE users SET password = ? WHERE username = 'admin'";
+        execute($sql, [$hash_admin]);
+        echo "Admin password reset successfully!<br>";
+    } else {
+        // Create new admin user
         $adminData = [
             'username' => 'admin',
-            'password' => $password,
+            'password' => $hash_admin,
             'email' => 'admin@nexinvent.local',
             'full_name' => 'System Administrator',
             'role' => 'admin',
             'status' => 'active',
             'created_at' => date('Y-m-d H:i:s')
         ];
-
         $admin_id = insert('users', $adminData);
-
-        if ($admin_id) {
-            echo "Admin user created successfully!<br>";
-            echo "Username: admin<br>";
-            echo "Password: admin123<br>";
-            echo "User ID: " . $admin_id . "<br><br>";
-            echo "<a href='login/index.php' class='btn btn-primary'>Go to Login</a>";
-        } else {
-            echo "Failed to create admin user.<br>";
-        }
-    } else {
-        echo "Admin user already exists.<br><br>";
-        echo "<a href='login/index.php' class='btn btn-primary'>Go to Login</a>";
+        echo "Admin user created successfully!<br>";
     }
+
+    // Reset customer password if exists, create if not
+    $sql = "SELECT user_id FROM users WHERE username = 'customer'";
+    $customer = fetchOne($sql);
+
+    if ($customer) {
+        // Update existing customer password
+        $sql = "UPDATE users SET password = ? WHERE username = 'customer'";
+        execute($sql, [$hash_customer]);
+        echo "Customer password reset successfully!<br>";
+    } else {
+        // Create new customer user
+        $customerData = [
+            'username' => 'customer',
+            'password' => $hash_customer,
+            'email' => 'customer@example.com',
+            'full_name' => 'Test Customer',
+            'role' => 'customer',
+            'status' => 'active',
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        $customer_id = insert('users', $customerData);
+        echo "Customer user created successfully!<br>";
+    }
+
+    echo "<br>You can now login with these credentials:<br><br>";
+    echo "<strong>Admin Account:</strong><br>";
+    echo "Username: admin<br>";
+    echo "Password: admin123<br><br>";
+    echo "<strong>Customer Account:</strong><br>";
+    echo "Username: customer<br>";
+    echo "Password: customer123<br><br>";
+    echo "<a href='login/index.php' class='btn btn-primary'>Go to Login</a>";
 
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "<br>";
     echo "Stack trace: <pre>" . $e->getTraceAsString() . "</pre>";
 }
-?> 
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -66,4 +95,4 @@ try {
         </div>
     </div>
 </body>
-</html> 
+</html>

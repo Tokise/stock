@@ -2,6 +2,7 @@
 session_start();
 require_once '../config/db.php';
 require_once '../includes/permissions.php';
+require_once '../includes/header.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -57,7 +58,7 @@ $low_stock_count = fetchValue("SELECT COUNT(*) FROM products WHERE quantity_in_s
             <h2>Products Management</h2>
             <div>
                 <?php if ($can_manage_products): ?>
-                <a href="categories/index.php" class="btn btn-outline-primary me-2">
+                <a href="/stock/src/modules/categories/index.php" class="btn btn-outline-primary me-2">
                     <i class="bi bi-folder"></i> Manage Categories
                 </a>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
@@ -458,4 +459,4 @@ function deleteProduct(productId) {
 </script>
 
 </body>
-</html> 
+</html>
