@@ -366,8 +366,8 @@ if (hasPermission('view_products')) {
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
                             <?php foreach ($recentlyAddedProducts as $product): ?>
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1"><?php echo htmlspecialchars($product['name']); ?></h6>
                                         <span class="badge bg-info"><?php echo htmlspecialchars($product['category_name']); ?></span>
                                     </div>
@@ -534,7 +534,7 @@ h2 {
 .timeline-content {
     /* These styles will be removed */
 }
-</style>
+</style> 
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

@@ -158,7 +158,7 @@ if (!function_exists('isPathActive')) {
                 <a href="/stock/src/modules/employees/index.php" class="sidebar-link <?php echo isPathActive('employees') ? 'active' : ''; ?>">
                     <i class="bi bi-people me-2"></i> Employees
                 </a>
-                <a href="/stock/src/modules/payroll/index.php" class="sidebar-link <?php echo isPathActive('payroll') ? 'active' : ''; ?>">
+                <a href="/stock/src/modules/employees/payroll.php" class="sidebar-link <?php echo isPathActive('employees', 'payroll') ? 'active' : ''; ?>">
                     <i class="bi bi-cash-stack me-2"></i> Payroll
                 </a>
             </nav>
