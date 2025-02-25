@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../config/db.php';
-require_once '../includes/permissions.php';
+require_once '../../config/db.php';
+require_once '../../includes/permissions.php';
 
 // Check if user is logged in and has permission
 if (!isset($_SESSION['user_id'])) {
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
-    <?php include '../includes/sidebar.php'; ?>
+    <?php include '../../includes/sidebar.php'; ?>
     
     <div class="main-content">
         <div class="container-fluid p-4">

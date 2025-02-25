@@ -79,6 +79,25 @@ try {
         'status' => $input['status'] ?? 'confirmed',
         'notes' => $input['notes'] ?? null
     ];
+    
+    // Add payment information if provided
+    if (isset($input['payment_status'])) {
+        $order_data['payment_status'] = $input['payment_status'];
+    }
+    
+    if (isset($input['payment_method']) && !empty($input['payment_method'])) {
+        $order_data['payment_method'] = $input['payment_method'];
+    }
+    
+    if (isset($input['amount_paid']) && $input['amount_paid'] > 0) {
+        $order_data['amount_paid'] = $input['amount_paid'];
+        $order_data['payment_date'] = date('Y-m-d H:i:s');
+        
+        // If fully paid, set status to completed
+        if ($input['payment_status'] === 'paid') {
+            $order_data['status'] = 'completed';
+        }
+    }
 
     error_log("Attempting to insert order with data: " . print_r($order_data, true));
     

@@ -85,14 +85,21 @@ CREATE TABLE IF NOT EXISTS sales_orders (
     tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     grand_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    status ENUM('draft', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'draft',
+    status ENUM('draft', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled') NOT NULL DEFAULT 'draft',
+    payment_status ENUM('unpaid', 'partially_paid', 'paid') NOT NULL DEFAULT 'unpaid',
+    payment_method ENUM('cash', 'e_wallet') DEFAULT NULL,
+    amount_paid DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    payment_date TIMESTAMP NULL DEFAULT NULL,
+    archived TINYINT(1) NOT NULL DEFAULT 0,
     shipping_address TEXT,
     billing_address TEXT,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    INDEX idx_payment_status (payment_status),
+    INDEX idx_archived (archived)
 );
 
 -- Sales Order Items Table
@@ -299,6 +306,29 @@ CREATE TABLE IF NOT EXISTS order_history (
     FOREIGN KEY (created_by) REFERENCES users(user_id)
 );
 
+-- Notifications Table
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    reference_id INT NULL,
+    for_role ENUM('admin', 'manager', 'employee', 'customer') NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Dashboard Statistics Table
+CREATE TABLE IF NOT EXISTS dashboard_stats (
+    stat_id INT PRIMARY KEY AUTO_INCREMENT,
+    stat_date DATE NOT NULL,
+    total_sales INT DEFAULT 0,
+    monthly_revenue DECIMAL(10,2) DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_stat_date (stat_date)
+);
+
 -- Insert default permissions
 INSERT INTO permissions (name, description) VALUES
 ('view_dashboard', 'View dashboard and statistics'),
@@ -325,7 +355,8 @@ INSERT INTO permissions (name, description) VALUES
 ('track_orders', 'Track order status'),
 ('view_order_history', 'View order history'),
 ('manage_profile', 'Manage own profile'),
-('manage_wishlist', 'Manage wishlist items')
+('manage_wishlist', 'Manage wishlist items'),
+('process_payments', 'Process order payments')
 ON DUPLICATE KEY UPDATE description = VALUES(description);
 
 -- Assign permissions to roles
@@ -349,7 +380,8 @@ WHERE name IN (
     'view_employees',
     'view_payroll',
     'view_reports',
-    'create_sale'
+    'create_sale',
+    'process_payments'
 );
 
 INSERT IGNORE INTO role_permissions (role, permission_id)
@@ -361,7 +393,8 @@ WHERE name IN (
     'view_sales',
     'view_purchases',
     'view_suppliers',
-    'create_sale'
+    'create_sale',
+    'process_payments'
 );
 
 INSERT IGNORE INTO role_permissions (role, permission_id)
@@ -417,6 +450,19 @@ CREATE TABLE IF NOT EXISTS customer_profiles (
     updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+CREATE TABLE IF NOT EXISTS shopping_cart (
+    cart_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    UNIQUE KEY unique_cart_item (user_id, product_id)
+);
+
 
 -- Add created_by column to employee_details if it doesn't exist
 SET @dbname = DATABASE();

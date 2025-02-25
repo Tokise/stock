@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../config/db.php';
-require_once '../includes/permissions.php';
+require_once '../../config/db.php';
+require_once '../../includes/permissions.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -46,7 +46,7 @@ $can_manage_inventory = hasPermission('manage_inventory');
 </head>
 <body>
 
-<?php include '../includes/sidebar.php'; ?>
+<?php include '../../includes/sidebar.php'; ?>
 
 <div class="main-content">
     <div class="container-fluid">

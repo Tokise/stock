@@ -1,11 +1,11 @@
 <?php
 session_start();
-require_once '../config/db.php';
-require_once '../includes/permissions.php';
+require_once '../../config/db.php';
+require_once '../../includes/permissions.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../../../login/index.php");
+    header("Location: ../../login/index.php");
     exit();
 }
 
@@ -44,8 +44,8 @@ $categories = fetchAll($sql);
 </head>
 <body>
 
-<?php include '../../modules/includes/sidebar.php'; ?>
-<?php include '../../modules/includes/header.php'; ?>
+<?php include '../../includes/sidebar.php'; ?>
+<?php include '../../includes/header.php'; ?>
 
 <div class="main-content">
     
@@ -158,7 +158,7 @@ $categories = fetchAll($sql);
     </div>
 </div>
 
-<?php include '../../modules/includes/footer.php'; ?>
+<?php include '../../includes/footer.php'; ?>
 
 <script>
 $(document).ready(function() {
@@ -183,7 +183,7 @@ function saveCategory() {
     showLoading('Saving category...');
 
     $.ajax({
-        url: 'ajax/save_category.php',
+        url: 'save_category.php',
         type: 'POST',
         data: formData,
         success: function(response) {
@@ -206,7 +206,7 @@ function saveCategory() {
 function editCategory(categoryId) {
     showLoading('Loading category details...');
 
-    $.get('ajax/get_category.php', { id: categoryId }, function(response) {
+    $.get('get_category.php', { id: categoryId }, function(response) {
         hideLoading();
         if (response.success) {
             const category = response.data;
@@ -235,7 +235,7 @@ function updateCategory() {
     showLoading('Updating category...');
 
     $.ajax({
-        url: 'ajax/update_category.php',
+        url: 'update_category.php',
         type: 'POST',
         data: formData,
         success: function(response) {
@@ -260,7 +260,7 @@ function deleteCategory(categoryId) {
         showLoading('Deleting category...');
 
         $.ajax({
-            url: 'ajax/delete_category.php',
+            url: 'delete_category.php',
             type: 'POST',
             data: { category_id: categoryId },
             success: function(response) {

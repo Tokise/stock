@@ -5,59 +5,43 @@ require_once '../../includes/permissions.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../../../login/index.php");
+    header("Location: ../../login/index.php");
     exit();
 }
 
 // Check if user has permission to view sales
 requirePermission('view_sales');
 
-// Get order ID from URL
-$order_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-if (!$order_id) {
-    header("Location: ../index.php");
+// Check if order ID is provided
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    $_SESSION['error'] = "Invalid order ID";
+    header("Location: ../sales/index.php");
     exit();
 }
 
-// Fetch order details with customer and employee information
-$order = fetchOne("
-    SELECT o.*, 
-           c.name as customer_name, 
-           c.email as customer_email,
-           c.phone as customer_phone,
-           u.full_name as employee_name,
-           u.email as employee_email
-    FROM orders o
-    LEFT JOIN customers c ON o.customer_id = c.customer_id
-    LEFT JOIN users u ON o.created_by = u.user_id
-    WHERE o.order_id = ?
-", [$order_id]);
+$sale_id = (int)$_GET['id'];
+
+// Get order details
+$sql = "SELECT so.*, c.name as customer_name, c.email as customer_email, c.phone as customer_phone,
+        u.username as created_by
+        FROM sales_orders so 
+        LEFT JOIN customers c ON so.customer_id = c.customer_id
+        LEFT JOIN users u ON so.user_id = u.user_id
+        WHERE so.sale_id = ?";
+$order = fetchOne($sql, [$sale_id]);
 
 if (!$order) {
-    header("Location: ../index.php");
+    $_SESSION['error'] = "Order not found";
+    header("Location: ../sales/index.php");
     exit();
 }
 
-// Fetch order items with product details
-$order_items = fetchAll("
-    SELECT oi.*, 
-           p.name as product_name,
-           p.sku,
-           p.unit_price as current_price
-    FROM order_items oi
-    LEFT JOIN products p ON oi.product_id = p.product_id
-    WHERE oi.order_id = ?
-", [$order_id]);
-
-// Calculate totals
-$subtotal = 0;
-foreach ($order_items as $item) {
-    $subtotal += $item['quantity'] * $item['unit_price'];
-}
-
-$tax = $subtotal * 0.10; // 10% tax
-$total = $subtotal + $tax;
+// Get order items
+$sql = "SELECT soi.*, p.name as product_name, p.sku
+        FROM sales_order_items soi
+        JOIN products p ON soi.product_id = p.product_id
+        WHERE soi.sale_id = ?";
+$orderItems = fetchAll($sql, [$sale_id]);
 ?>
 
 <!DOCTYPE html>
@@ -65,133 +49,197 @@ $total = $subtotal + $tax;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Details #<?php echo $order_id; ?> - NexInvent</title>
+    <title>NexInvent - Order Details</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        .order-status {
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-weight: 500;
-        }
-        .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-processing { background-color: #cce5ff; color: #004085; }
-        .status-completed { background-color: #d4edda; color: #155724; }
-        .status-cancelled { background-color: #f8d7da; color: #721c24; }
-        
-        .order-info {
+        .order-header {
             background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
         }
-        
-        .table th {
-            background-color: #f8f9fa;
+        .status-timeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
         }
-        
-        .action-buttons .btn {
-            margin-right: 0.5rem;
+        .status-timeline::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
         }
-        
-        @media print {
-            .sidebar, .action-buttons, .btn {
-                display: none !important;
-            }
-            .main-content {
-                margin-left: 0 !important;
-                padding: 0 !important;
-            }
+        .status-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+        .status-step-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+        }
+        .status-step.active .status-step-icon {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .status-step.completed .status-step-icon {
+            background-color: #198754;
+            color: white;
         }
     </style>
 </head>
 <body>
 
 <?php include '../../includes/sidebar.php'; ?>
-<?php include '../../includes/header.php'; ?>
 
 <div class="main-content">
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Order #<?php echo $order_id; ?></h2>
-            <div class="action-buttons">
-                <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
-                    <i class="bi bi-printer"></i> Print
+            <h2>Order #<?php echo str_pad($order['sale_id'], 6, '0', STR_PAD_LEFT); ?></h2>
+            <div>
+                <?php if ($order['payment_status'] !== 'paid' && hasPermission('process_payments')): ?>
+                <a href="payment.php?id=<?php echo $order['sale_id']; ?>" class="btn btn-success me-2">
+                    <i class="bi bi-cash me-1"></i> Process Payment
+                </a>
+                <?php endif; ?>
+                
+                <?php if ($order['status'] !== 'completed' && $order['status'] !== 'cancelled' && (hasPermission('manage_sales') || hasPermission('process_payments'))): ?>
+                <button type="button" class="btn btn-primary me-2" onclick="updateOrderStatus(<?php echo $order['sale_id']; ?>)">
+                    <i class="bi bi-pencil me-1"></i> Update Status
                 </button>
-                <button type="button" class="btn btn-outline-primary" onclick="exportPDF()">
-                    <i class="bi bi-file-pdf"></i> Export PDF
-                </button>
-                <a href="../index.php" class="btn btn-outline-dark">
-                    <i class="bi bi-arrow-left"></i> Back to Orders
+                <?php endif; ?>
+                
+                <a href="../sales/index.php" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Sales
                 </a>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-8">
-                <!-- Order Status -->
-                <div class="order-info">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Order Status</h5>
-                        <span class="order-status status-<?php echo strtolower($order['status']); ?>">
-                            <?php echo ucfirst($order['status']); ?>
-                        </span>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Order Date:</strong> <?php echo date('M d, Y H:i', strtotime($order['created_at'])); ?></p>
-                            <p class="mb-1"><strong>Payment Method:</strong> <?php echo $order['payment_method']; ?></p>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Last Updated:</strong> <?php echo date('M d, Y H:i', strtotime($order['updated_at'])); ?></p>
-                            <p class="mb-1"><strong>Payment Status:</strong> <?php echo ucfirst($order['payment_status']); ?></p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Order Items -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Order Items</h5>
-                    </div>
+                <div class="card mb-4">
                     <div class="card-body">
+                        <div class="order-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Order Information</h5>
+                                    <p class="mb-1"><strong>Order Date:</strong> <?php echo date('Y-m-d', strtotime($order['created_at'])); ?></p>
+                                    <p class="mb-1"><strong>Created By:</strong> <?php echo htmlspecialchars($order['created_by']); ?></p>
+                                    <p class="mb-1">
+                                        <strong>Status:</strong> 
+                                        <span class="badge bg-<?php echo getStatusBadgeClass($order['status']); ?>">
+                                            <?php echo ucfirst($order['status']); ?>
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Payment Information</h5>
+                                    <p class="mb-1">
+                                        <strong>Payment Status:</strong> 
+                                        <span class="badge bg-<?php echo getPaymentStatusBadgeClass($order['payment_status'] ?? 'unpaid'); ?>">
+                                            <?php echo ucfirst(str_replace('_', ' ', $order['payment_status'] ?? 'unpaid')); ?>
+                                        </span>
+                                    </p>
+                                    <p class="mb-1"><strong>Payment Method:</strong> <?php echo ucfirst($order['payment_method'] ?? 'Not specified'); ?></p>
+                                    <p class="mb-1"><strong>Amount Paid:</strong> $<?php echo number_format($order['amount_paid'] ?? 0, 2); ?></p>
+                                    <?php if (isset($order['payment_date']) && $order['payment_date']): ?>
+                                    <p class="mb-1"><strong>Payment Date:</strong> <?php echo date('Y-m-d', strtotime($order['payment_date'])); ?></p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-timeline">
+                            <?php
+                            $statuses = ['draft', 'confirmed', 'processing', 'shipped', 'delivered', 'completed'];
+                            $currentStatusIndex = array_search($order['status'], $statuses);
+                            
+                            foreach ($statuses as $index => $status):
+                                $statusClass = '';
+                                if ($index < $currentStatusIndex || $order['status'] === $status) {
+                                    $statusClass = 'completed';
+                                }
+                                if ($order['status'] === $status) {
+                                    $statusClass = 'active';
+                                }
+                            ?>
+                            <div class="status-step <?php echo $statusClass; ?>">
+                                <div class="status-step-icon">
+                                    <?php if ($index < $currentStatusIndex): ?>
+                                    <i class="bi bi-check"></i>
+                                    <?php else: ?>
+                                    <i class="bi bi-circle"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="status-step-label"><?php echo ucfirst($status); ?></div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <h5 class="mt-4">Order Items</h5>
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table table-striped">
                                 <thead>
                                     <tr>
                                         <th>Product</th>
                                         <th>SKU</th>
-                                        <th class="text-end">Unit Price</th>
-                                        <th class="text-center">Quantity</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-end">Quantity</th>
                                         <th class="text-end">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($order_items as $item): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($item['product_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($item['sku']); ?></td>
-                                            <td class="text-end">$<?php echo number_format($item['unit_price'], 2); ?></td>
-                                            <td class="text-center"><?php echo $item['quantity']; ?></td>
-                                            <td class="text-end">$<?php echo number_format($item['quantity'] * $item['unit_price'], 2); ?></td>
-                                        </tr>
+                                    <?php foreach ($orderItems as $item): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($item['sku']); ?></td>
+                                        <td class="text-end">$<?php echo number_format($item['price'], 2); ?></td>
+                                        <td class="text-end"><?php echo $item['quantity']; ?></td>
+                                        <td class="text-end">$<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
+                                    </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
-                                        <td class="text-end">$<?php echo number_format($subtotal, 2); ?></td>
+                                        <td class="text-end">$<?php echo number_format($order['subtotal'], 2); ?></td>
                                     </tr>
+                                    <?php if ($order['tax_amount'] > 0): ?>
                                     <tr>
-                                        <td colspan="4" class="text-end"><strong>Tax (10%):</strong></td>
-                                        <td class="text-end">$<?php echo number_format($tax, 2); ?></td>
+                                        <td colspan="4" class="text-end"><strong>Tax:</strong></td>
+                                        <td class="text-end">$<?php echo number_format($order['tax_amount'], 2); ?></td>
                                     </tr>
+                                    <?php endif; ?>
+                                    <?php if ($order['discount_amount'] > 0): ?>
                                     <tr>
-                                        <td colspan="4" class="text-end"><strong>Total:</strong></td>
-                                        <td class="text-end"><strong>$<?php echo number_format($total, 2); ?></strong></td>
+                                        <td colspan="4" class="text-end"><strong>Discount:</strong></td>
+                                        <td class="text-end">-$<?php echo number_format($order['discount_amount'], 2); ?></td>
                                     </tr>
+                                    <?php endif; ?>
+                                    <tr>
+                                        <td colspan="4" class="text-end"><strong>Grand Total:</strong></td>
+                                        <td class="text-end"><strong>$<?php echo number_format($order['grand_total'], 2); ?></strong></td>
+                                    </tr>
+                                    <?php if (($order['payment_status'] ?? 'unpaid') !== 'paid'): ?>
+                                    <tr>
+                                        <td colspan="4" class="text-end"><strong>Balance Due:</strong></td>
+                                        <td class="text-end"><strong>$<?php echo number_format(($order['grand_total'] - ($order['amount_paid'] ?? 0)), 2); ?></strong></td>
+                                    </tr>
+                                    <?php endif; ?>
                                 </tfoot>
                             </table>
                         </div>
@@ -200,90 +248,117 @@ $total = $subtotal + $tax;
             </div>
 
             <div class="col-md-4">
-                <!-- Customer Information -->
                 <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Customer Information</h5>
-                    </div>
                     <div class="card-body">
+                        <h5 class="card-title">Customer Information</h5>
                         <p class="mb-1"><strong>Name:</strong> <?php echo htmlspecialchars($order['customer_name']); ?></p>
                         <p class="mb-1"><strong>Email:</strong> <?php echo htmlspecialchars($order['customer_email']); ?></p>
                         <p class="mb-1"><strong>Phone:</strong> <?php echo htmlspecialchars($order['customer_phone']); ?></p>
                     </div>
                 </div>
 
-                <!-- Order Processing -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Order Processing</h5>
-                    </div>
+                <?php if (!empty($order['notes'])): ?>
+                <div class="card mb-4">
                     <div class="card-body">
-                        <p class="mb-1"><strong>Processed By:</strong> <?php echo htmlspecialchars($order['employee_name']); ?></p>
-                        <p class="mb-1"><strong>Employee Email:</strong> <?php echo htmlspecialchars($order['employee_email']); ?></p>
-                        <hr>
-                        <div class="d-grid gap-2">
-                            <?php if ($order['status'] === 'pending'): ?>
-                                <button type="button" class="btn btn-success" onclick="updateOrderStatus('processing')">
-                                    <i class="bi bi-check-circle"></i> Process Order
-                                </button>
-                            <?php elseif ($order['status'] === 'processing'): ?>
-                                <button type="button" class="btn btn-success" onclick="updateOrderStatus('completed')">
-                                    <i class="bi bi-check-circle"></i> Complete Order
-                                </button>
-                            <?php endif; ?>
-                            <?php if ($order['status'] !== 'cancelled' && $order['status'] !== 'completed'): ?>
-                                <button type="button" class="btn btn-danger" onclick="updateOrderStatus('cancelled')">
-                                    <i class="bi bi-x-circle"></i> Cancel Order
-                                </button>
-                            <?php endif; ?>
-                        </div>
+                        <h5 class="card-title">Order Notes</h5>
+                        <p><?php echo nl2br(htmlspecialchars($order['notes'])); ?></p>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Bootstrap 5 JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-function updateOrderStatus(status) {
-    if (!confirm('Are you sure you want to update the order status to ' + status + '?')) {
-        return;
-    }
-
-    showLoading('Updating order status...');
-
-    $.ajax({
-        url: 'process_order.php',
-        type: 'POST',
-        data: {
-            order_id: <?php echo $order_id; ?>,
-            status: status,
-            action: 'update_status'
+function updateOrderStatus(saleId) {
+    Swal.fire({
+        title: 'Update Order Status',
+        input: 'select',
+        inputOptions: {
+            'draft': 'Draft',
+            'confirmed': 'Confirmed',
+            'processing': 'Processing',
+            'shipped': 'Shipped',
+            'delivered': 'Delivered',
+            'completed': 'Completed',
+            'cancelled': 'Cancelled'
         },
-        success: function(response) {
-            hideLoading();
-            if (response.success) {
-                showSuccess('Order status updated successfully', function() {
+        inputPlaceholder: 'Select a status',
+        showCancelButton: true,
+        confirmButtonText: 'Update',
+        showLoaderOnConfirm: true,
+        preConfirm: (status) => {
+            return fetch('../sales/ajax/update_order_status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `sale_id=${saleId}&status=${status}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(response.statusText)
+                }
+                return response.json()
+            })
+            .catch(error => {
+                Swal.showValidationMessage(
+                    `Request failed: ${error}`
+                )
+            })
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+            if (result.value.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: result.value.message,
+                    icon: 'success'
+                }).then(() => {
                     location.reload();
                 });
             } else {
-                showError(response.error || 'Failed to update order status');
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.value.message,
+                    icon: 'error'
+                });
             }
-        },
-        error: function() {
-            hideLoading();
-            showError('Failed to update order status');
         }
     });
 }
-
-function exportPDF() {
-    showLoading('Generating PDF...');
-    window.location.href = 'export_pdf.php?id=<?php echo $order_id; ?>';
-    setTimeout(hideLoading, 1000);
-}
 </script>
+
+<?php
+function getStatusBadgeClass($status) {
+    return match($status) {
+        'draft' => 'secondary',
+        'confirmed' => 'primary',
+        'processing' => 'info',
+        'shipped' => 'warning',
+        'delivered' => 'success',
+        'completed' => 'success',
+        'cancelled' => 'danger',
+        default => 'secondary'
+    };
+}
+
+function getPaymentStatusBadgeClass($status) {
+    return match($status) {
+        'paid' => 'success',
+        'partially_paid' => 'warning',
+        'unpaid' => 'danger',
+        default => 'warning'
+    };
+}
+?>
 
 </body>
 </html> 

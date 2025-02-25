@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../config/db.php';
-require_once '../includes/permissions.php';
+require_once '../../config/db.php';
+require_once '../../includes/permissions.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -30,7 +30,8 @@ $recent_sales = fetchAll($sql);
 $stats = [
     'today_sales' => fetchValue("SELECT COUNT(*) FROM sales_orders WHERE DATE(created_at) = CURDATE()"),
     'month_sales' => fetchValue("SELECT COUNT(*) FROM sales_orders WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())"),
-    'pending_orders' => fetchValue("SELECT COUNT(*) FROM sales_orders WHERE status IN ('draft', 'confirmed', 'processing')")
+    'pending_orders' => fetchValue("SELECT COUNT(*) FROM sales_orders WHERE status IN ('draft', 'confirmed', 'processing')"),
+    'unpaid_orders' => fetchValue("SELECT COUNT(*) FROM sales_orders WHERE payment_status != 'paid'")
 ];
 
 // Calculate total revenue
@@ -55,7 +56,7 @@ $revenue = [
 </head>
 <body>
 
-<?php include '../includes/sidebar.php'; ?>
+<?php include '../../includes/sidebar.php'; ?>
 
 <div class="main-content">
     <div class="container-fluid">
@@ -65,7 +66,7 @@ $revenue = [
 
         <!-- Statistics Cards -->
         <div class="row g-4 mb-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card bg-primary text-white">
                     <div class="card-body">
                         <h5 class="card-title">Today's Sales</h5>
@@ -76,7 +77,7 @@ $revenue = [
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card bg-success text-white">
                     <div class="card-body">
                         <h5 class="card-title">Monthly Sales</h5>
@@ -87,11 +88,19 @@ $revenue = [
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card bg-warning text-dark">
                     <div class="card-body">
                         <h5 class="card-title">Pending Orders</h5>
                         <h3 class="mb-0"><?php echo $stats['pending_orders']; ?></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Unpaid Orders</h5>
+                        <h3 class="mb-0"><?php echo $stats['unpaid_orders']; ?></h3>
                     </div>
                 </div>
             </div>
@@ -127,6 +136,7 @@ $revenue = [
                             <th>Items</th>
                             <th>Total</th>
                             <th>Status</th>
+                            <th>Payment</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -144,9 +154,34 @@ $revenue = [
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="orders/view.php?id=<?php echo $sale['sale_id']; ?>" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
+                                    <span class="badge bg-<?php echo getPaymentStatusBadgeClass($sale['payment_status'] ?? 'unpaid'); ?>">
+                                        <?php echo ucfirst(str_replace('_', ' ', $sale['payment_status'] ?? 'unpaid')); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="../orders/view.php?id=<?php echo $sale['sale_id']; ?>" class="btn btn-sm btn-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        
+                                        <?php if ($sale['payment_status'] !== 'paid' && hasPermission('process_payments')): ?>
+                                        <a href="../orders/payment.php?id=<?php echo $sale['sale_id']; ?>" class="btn btn-sm btn-success">
+                                            <i class="bi bi-cash"></i>
+                                        </a>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($sale['status'] !== 'completed' && $sale['status'] !== 'cancelled' && (hasPermission('manage_sales') || hasPermission('process_payments'))): ?>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="updateOrderStatus(<?php echo $sale['sale_id']; ?>)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (hasPermission('delete_sales')): ?>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="archiveOrder(<?php echo $sale['sale_id']; ?>)">
+                                            <i class="bi bi-archive"></i>
+                                        </button>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -174,6 +209,110 @@ $(document).ready(function() {
     });
 });
 
+function updateOrderStatus(saleId) {
+    Swal.fire({
+        title: 'Update Order Status',
+        html: `
+            <select id="orderStatus" class="form-select">
+                <option value="confirmed">Confirmed</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Update',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            const status = document.getElementById('orderStatus').value;
+            return fetch(`ajax/update_order_status.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `sale_id=${saleId}&status=${status}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(response.statusText);
+                }
+                return response.json();
+            })
+            .catch(error => {
+                Swal.showValidationMessage(`Request failed: ${error}`);
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+            if (result.value.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: result.value.message,
+                    icon: 'success'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.value.error,
+                    icon: 'error'
+                });
+            }
+        }
+    });
+}
+
+function archiveOrder(saleId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This will archive the order. You can still view it in the archived orders section.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, archive it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`ajax/archive_order.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `sale_id=${saleId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Archived!',
+                        text: data.message,
+                        icon: 'success'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.error,
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to archive order. Please try again.',
+                    icon: 'error'
+                });
+            });
+        }
+    });
+}
+
 <?php
 function getStatusBadgeClass($status) {
     return match($status) {
@@ -182,8 +321,18 @@ function getStatusBadgeClass($status) {
         'processing' => 'info',
         'shipped' => 'warning',
         'delivered' => 'success',
+        'completed' => 'success',
         'cancelled' => 'danger',
         default => 'secondary'
+    };
+}
+
+function getPaymentStatusBadgeClass($status) {
+    return match($status) {
+        'paid' => 'success',
+        'partially_paid' => 'warning',
+        'unpaid' => 'danger',
+        default => 'warning'
     };
 }
 ?>

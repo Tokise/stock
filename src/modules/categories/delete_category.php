@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../../../config/db.php';
-require_once '../../../includes/permissions.php';
+require_once '../../config/db.php';
+require_once '../../includes/permissions.php';
 
 // Set JSON response header
 header('Content-Type: application/json');

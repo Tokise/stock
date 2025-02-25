@@ -1,10 +1,13 @@
 <?php
-session_start();
+// Only start session if one doesn't already exist
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/../../includes/permissions.php';
+require_once __DIR__ . '/../../../config/db.php';
+require_once __DIR__ . '/../../../includes/permissions.php';
 
 // Check if user is logged in and is a customer
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'customer') {

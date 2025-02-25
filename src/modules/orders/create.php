@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../config/db.php';
-require_once '../includes/permissions.php';
+require_once '../../config/db.php';
+require_once '../../includes/permissions.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -39,7 +39,7 @@ $products = fetchAll("SELECT p.*, c.name as category_name
 </head>
 <body>
 
-<?php include '../includes/sidebar.php'; ?>
+<?php include '../../includes/sidebar.php'; ?>
 
 <div class="main-content">
     <div class="container-fluid">
@@ -151,6 +151,36 @@ $products = fetchAll("SELECT p.*, c.name as category_name
                         </div>
                     </div>
 
+                    <!-- Payment Information -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Payment Information</h5>
+                            
+                            <div class="mb-3">
+                                <label for="payment_method" class="form-label">Payment Method</label>
+                                <select class="form-select" id="payment_method" name="payment_method">
+                                    <option value="">Select Payment Method</option>
+                                    <option value="cash">Cash</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="amount_paid" class="form-label">Amount Paid</label>
+                                <input type="number" class="form-control" id="amount_paid" name="amount_paid" step="0.01" min="0" value="0">
+                                <div class="form-text">Leave as 0 for unpaid orders.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="pay_full_amount">
+                                    <label class="form-check-label" for="pay_full_amount">
+                                        Pay Full Amount
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Submit Buttons -->
                     <div class="d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-secondary" onclick="saveDraft()">Save as Draft</button>
@@ -232,6 +262,28 @@ $(document).ready(function() {
             createOrder(false);
         }
         $(this).addClass('was-validated');
+    });
+    
+    // Handle "Pay Full Amount" checkbox
+    $('#pay_full_amount').on('change', function() {
+        if ($(this).is(':checked')) {
+            const grandTotal = parseFloat($('#grand_total').text());
+            $('#amount_paid').val(grandTotal.toFixed(2));
+        } else {
+            $('#amount_paid').val('0.00');
+        }
+    });
+    
+    // Update payment status when amount changes
+    $('#amount_paid').on('input', function() {
+        const amountPaid = parseFloat($(this).val()) || 0;
+        const grandTotal = parseFloat($('#grand_total').text());
+        
+        if (amountPaid >= grandTotal) {
+            $('#pay_full_amount').prop('checked', true);
+        } else {
+            $('#pay_full_amount').prop('checked', false);
+        }
     });
 });
 
@@ -395,6 +447,16 @@ function collectOrderData() {
         throw new Error('Please fill in all required fields');
     }
 
+    const grandTotal = parseFloat($('#grand_total').text());
+    const amountPaid = parseFloat($('#amount_paid').val()) || 0;
+    let paymentStatus = 'unpaid';
+    
+    if (amountPaid >= grandTotal) {
+        paymentStatus = 'paid';
+    } else if (amountPaid > 0) {
+        paymentStatus = 'partially_paid';
+    }
+
     const orderData = {
         customer_id: parseInt($('#customer_id').val()),
         shipping_address: $('#shipping_address').val().trim(),
@@ -405,7 +467,10 @@ function collectOrderData() {
         subtotal: parseFloat($('#subtotal').text()),
         tax_amount: parseFloat($('#total_tax').text()),
         discount_amount: parseFloat($('#total_discount').text()),
-        grand_total: parseFloat($('#grand_total').text())
+        grand_total: grandTotal,
+        payment_method: $('#payment_method').val() || null,
+        amount_paid: amountPaid,
+        payment_status: paymentStatus
     };
 
     // Validate required fields
@@ -420,6 +485,11 @@ function collectOrderData() {
     }
     if (!orderData.due_date) {
         throw new Error('Please select due date');
+    }
+    
+    // Validate payment method if amount is paid
+    if (orderData.amount_paid > 0 && !orderData.payment_method) {
+        throw new Error('Please select a payment method');
     }
 
     console.log('Collected order data:', orderData);

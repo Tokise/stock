@@ -2,7 +2,10 @@
 require_once '../../../config/db.php';
 require_once '../../includes/functions.php';
 
-session_start();
+// Only start session if one doesn't already exist
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 header('Content-Type: application/json');
 
