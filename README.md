@@ -25,7 +25,7 @@ Welcome to NexInvent, your next-generation inventory and sales management soluti
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/Tokise/StockProject.git
+   git clone https://github.com/Tokise/stock.git
    ```
 
 2. **Database Setup**
@@ -36,7 +36,7 @@ Welcome to NexInvent, your next-generation inventory and sales management soluti
    ```
 
 3. **Configuration**
-   - Navigate to `src/modules/config/`
+   - Navigate to `src/config/`
    - Copy `db.example.php` to `db.php`
    - Update database credentials in `db.php`
 
