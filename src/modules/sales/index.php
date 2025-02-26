@@ -113,7 +113,7 @@ $revenue = [
                     <div class="card-body">
                         <h5 class="card-title">Quick Actions</h5>
                         <div class="d-flex gap-2">
-                            <a href="../orders/index.php" class="btn btn-outline-primary">
+                            <a href="../orders/view.php" class="btn btn-outline-primary">
                                 <i class="bi bi-cart"></i> View All Orders
                             </a>
 

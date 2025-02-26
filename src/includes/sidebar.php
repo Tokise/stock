@@ -158,7 +158,7 @@ if (!function_exists('isPathActive')) {
                 <a href="/stock/src/modules/employees/index.php" class="sidebar-link <?php echo isPathActive('employees') ? 'active' : ''; ?>">
                     <i class="bi bi-people me-2"></i> Employees
                 </a>
-                <a href="/stock/src/modules/employees/payroll.php" class="sidebar-link <?php echo isPathActive('employees', 'payroll') ? 'active' : ''; ?>">
+                <a href="/stock/src/modules/payroll/index.php" class="sidebar-link <?php echo isPathActive('payroll') ? 'active' : ''; ?>">
                     <i class="bi bi-cash-stack me-2"></i> Payroll
                 </a>
             </nav>
@@ -171,8 +171,8 @@ if (!function_exists('isPathActive')) {
                 <a href="/stock/src/modules/reports/index.php" class="sidebar-link <?php echo isPathActive('reports') ? 'active' : ''; ?>">
                     <i class="bi bi-file-earmark-text me-2"></i> Reports
                 </a>
-                <a href="/stock/src/modules/settings/settings.php" class="sidebar-link <?php echo isPathActive('settings') ? 'active' : ''; ?>">
-                    <i class="bi bi-gear me-2"></i> Settings
+                <a href="/stock/src/modules/users/settings.php" class="sidebar-link <?php echo isPathActive('settings') ? 'active' : ''; ?>">
+                    <i class="bi bi-gear me-2"></i> My Account
                 </a>
             </nav>
         </div>
@@ -183,4 +183,4 @@ if (!function_exists('isPathActive')) {
             <i class="bi bi-box-arrow-right"></i> Logout
         </a>
     </div>
-</div> 
+</div>

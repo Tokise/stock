@@ -13,6 +13,8 @@ requirePermission('manage_employees');
 
 // Get employee details if employee_id is provided
 $employee = null;
+$user = null;
+
 if (isset($_GET['employee_id'])) {
     $sql = "SELECT * FROM employee_details WHERE employee_id = ?";
     $employee = fetchOne($sql, [$_GET['employee_id']]);
@@ -29,6 +31,22 @@ if (isset($_GET['employee_id'])) {
         header("Location: ../employees/index.php");
         exit();
     }
+} elseif (isset($_GET['user_id'])) {
+    // Get user and employee details for editing
+    $sql = "SELECT u.*, e.* 
+            FROM users u 
+            JOIN employee_details e ON u.user_id = e.user_id 
+            WHERE u.user_id = ?";
+    $data = fetchOne($sql, [$_GET['user_id']]);
+    
+    if (!$data) {
+        $_SESSION['error'] = "User not found";
+        header("Location: ../employees/index.php");
+        exit();
+    }
+    
+    $user = $data;
+    $employee = $data;
 }
 
 // Handle form submission
@@ -40,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role = $_POST['role'] ?? '';
     $full_name = $_POST['full_name'] ?? '';
     $employee_id = $_POST['employee_id'] ?? null;
+    $user_id = $_POST['user_id'] ?? null;
     
     $errors = [];
     
@@ -47,9 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username)) {
         $errors['username'] = "Username is required";
     } else {
-        // Check if username exists
-        $sql = "SELECT COUNT(*) FROM users WHERE username = ?";
-        if (fetchValue($sql, [$username]) > 0) {
+        // Check if username exists (excluding current user if editing)
+        $sql = "SELECT COUNT(*) FROM users WHERE username = ? " . 
+               ($user_id ? "AND user_id != ?" : "");
+        $params = [$username];
+        if ($user_id) {
+            $params[] = $user_id;
+        }
+        if (fetchValue($sql, $params) > 0) {
             $errors['username'] = "Username already exists";
         }
     }
@@ -60,23 +84,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = "Invalid email format";
     } else {
-        // Check if email exists
-        $sql = "SELECT COUNT(*) FROM users WHERE email = ?";
-        if (fetchValue($sql, [$email]) > 0) {
+        $sql = "SELECT COUNT(*) FROM users WHERE email = ? " . 
+               ($user_id ? "AND user_id != ?" : "");
+        $params = [$email];
+        if ($user_id) {
+            $params[] = $user_id;
+        }
+        if (fetchValue($sql, $params) > 0) {
             $errors['email'] = "Email already exists";
         }
     }
     
-    // Validate password
-    if (empty($password)) {
-        $errors['password'] = "Password is required";
-    } elseif (strlen($password) < 6) {
-        $errors['password'] = "Password must be at least 6 characters";
-    }
-    
-    // Validate confirm password
-    if ($password !== $confirm_password) {
-        $errors['confirm_password'] = "Passwords do not match";
+    // Only validate password if it's a new user or if password is being changed
+    if (!$user_id || !empty($password)) {
+        if (empty($password) && !$user_id) {
+            $errors['password'] = "Password is required";
+        } elseif (!empty($password) && strlen($password) < 6) {
+            $errors['password'] = "Password must be at least 6 characters";
+        }
+        
+        if ($password !== $confirm_password) {
+            $errors['confirm_password'] = "Passwords do not match";
+        }
     }
     
     // Validate role
@@ -93,54 +122,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($errors)) {
         try {
-            // Start transaction
             $conn = getDBConnection();
             $conn->beginTransaction();
             
-            // Create user account
-            $user_data = [
-                'username' => $username,
-                'password' => password_hash($password, PASSWORD_DEFAULT),
-                'email' => $email,
-                'full_name' => $employee ? $employee['full_name'] : $full_name,
-                'role' => $role,
-                'created_at' => date('Y-m-d H:i:s'),
-                'created_by' => $_SESSION['user_id'],
-                'status' => 'active'  // Add status field
-            ];
-            
-            // Debug log
-            error_log("Attempting to create user with data: " . print_r($user_data, true));
-            
-            $user_id = insert('users', $user_data);
-            
-            // If this is for an existing employee, update their record
-            if ($employee) {
-                update('employee_details', 
-                       ['user_id' => $user_id], 
-                       'employee_id = ?', 
-                       [$employee['employee_id']]);
+            if ($user_id) {
+                // Update existing user
+                $user_data = [
+                    'username' => $username,
+                    'email' => $email,
+                    'role' => $role,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                    'updated_by' => $_SESSION['user_id']
+                ];
+                
+                // Only update password if a new one is provided
+                if (!empty($password)) {
+                    $user_data['password'] = password_hash($password, PASSWORD_DEFAULT);
+                }
+                
+                update('users', $user_data, 'user_id = ?', [$user_id]);
+                $_SESSION['success'] = "Staff account updated successfully!";
+            } else {
+                // Create new user account
+                $user_data = [
+                    'username' => $username,
+                    'password' => password_hash($password, PASSWORD_DEFAULT),
+                    'email' => $email,
+                    'full_name' => $employee ? $employee['full_name'] : $full_name,
+                    'role' => $role,
+                    'status' => 'active',
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'created_by' => $_SESSION['user_id']
+                ];
+                
+                $user_id = insert('users', $user_data);
+                
+                // Update employee record with user_id
+                if ($employee) {
+                    update('employee_details', 
+                           ['user_id' => $user_id], 
+                           'employee_id = ?', 
+                           [$employee['employee_id']]);
+                }
+                
+                $_SESSION['success'] = "Staff account created successfully!";
             }
             
-            // Commit transaction
             $conn->commit();
-            
-            // Set success message and redirect
-            $_SESSION['success'] = "Staff account created successfully!";
             header("Location: ../employees/index.php");
             exit();
             
         } catch (Exception $e) {
-            // Rollback transaction
             if ($conn->inTransaction()) {
                 $conn->rollBack();
             }
-            $errors['general'] = "Failed to create staff account: " . $e->getMessage();
-            error_log("Staff account creation error: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
+            $errors['general'] = "Failed to " . ($user_id ? "update" : "create") . " staff account: " . $e->getMessage();
+            error_log("Staff account error: " . $e->getMessage());
         }
     }
 }
+
+// Update the page title based on whether we're editing or creating
+$page_title = $user ? "Edit Staff Account" : "Create Staff Account";
 ?>
 
 <!DOCTYPE html>
@@ -148,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexInvent - Create Staff Account</title>
+    <title>NexInvent - <?php echo $page_title; ?></title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -165,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="col-md-8">
                     <div class="card shadow">
                         <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0">Create Staff Account</h4>
+                            <h4 class="mb-0"><?php echo $page_title; ?></h4>
                         </div>
                         
                         <div class="card-body">
@@ -253,7 +296,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 
                                 <div class="d-grid gap-2">
                                     <button type="submit" class="btn btn-primary">
-                                        Create Staff Account
+                                        <?php echo $page_title; ?>
                                     </button>
                                     <a href="../employees/index.php" class="btn btn-secondary">
                                         Cancel

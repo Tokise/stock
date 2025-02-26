@@ -7,7 +7,7 @@ define('DB_NAME', 'nexinvent');
 
 // Create connection
 try {
-    $conn = new PDO(
+    $pdo = new PDO(
         "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8",
         DB_USER,
         DB_PASS,
@@ -20,15 +20,15 @@ try {
 
 // Function to get database connection
 function getDBConnection() {
-    global $conn;
-    return $conn;
+    global $pdo;
+    return $pdo;
 }
 
 // Helper function to execute queries
 function executeQuery($sql, $params = array()) {
     try {
-        $conn = getDBConnection();
-        $stmt = $conn->prepare($sql);
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt;
     } catch(PDOException $e) {
@@ -39,7 +39,9 @@ function executeQuery($sql, $params = array()) {
 
 // Helper function to fetch all rows
 function fetchAll($sql, $params = array()) {
-    $stmt = executeQuery($sql, $params);
+    global $pdo;
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -64,10 +66,10 @@ function insert($table, $data) {
     $sql = "INSERT INTO $table (" . implode(',', $fields) . ") VALUES ($placeholders)";
     
     try {
-        $conn = getDBConnection();
-        $stmt = $conn->prepare($sql);
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare($sql);
         $stmt->execute($values);
-        return $conn->lastInsertId();
+        return $pdo->lastInsertId();
     } catch(PDOException $e) {
         error_log("Insert Error: " . $e->getMessage());
         throw $e;
@@ -87,8 +89,8 @@ function update($table, $data, $where, $whereParams = array()) {
     $sql = "UPDATE $table SET " . implode(',', $fields) . " WHERE $where";
     
     try {
-        $conn = getDBConnection();
-        $stmt = $conn->prepare($sql);
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare($sql);
         $stmt->execute(array_merge($values, $whereParams));
         return $stmt->rowCount();
     } catch(PDOException $e) {
@@ -102,8 +104,8 @@ function delete($table, $where, $whereParams = array()) {
     $sql = "DELETE FROM $table WHERE $where";
     
     try {
-        $conn = getDBConnection();
-        $stmt = $conn->prepare($sql);
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare($sql);
         $stmt->execute($whereParams);
         return $stmt->rowCount();
     } catch(PDOException $e) {
@@ -113,8 +115,7 @@ function delete($table, $where, $whereParams = array()) {
 }
 
 function execute($sql, $params = []) {
-    global $conn; // Assuming you have a PDO instance named $conn
-    $stmt = $conn->prepare($sql);
-    $stmt->execute($params);
-    return $stmt;
-} 
+    global $pdo;
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute($params);
+}

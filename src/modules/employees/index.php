@@ -9,51 +9,21 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-requirePermission('view_employees');
+requirePermission('manage_employees');
 
-// Get employee list with user account information
-$sql = "SELECT e.*, 
-        u.username, u.email, u.role, u.status
+// Get all employees
+$sql = "SELECT e.*, u.email, u.status as user_status, u.role, u.user_id 
         FROM employee_details e 
         LEFT JOIN users u ON e.user_id = u.user_id 
-        ORDER BY e.employee_id DESC";
+        ORDER BY e.full_name";
 $employees = fetchAll($sql);
 
-// Get statistics
-$total_employees = count($employees);
-$active_accounts = 0;
-$managers = 0;
-$regular_employees = 0;
-
-foreach ($employees as $emp) {
-    if (!empty($emp['username'])) {
-        $active_accounts++;
-        if ($emp['role'] === 'manager') {
-            $managers++;
-        } else {
-            $regular_employees++;
-        }
-    }
-}
-
-// Get existing user accounts that are not linked to employees
-$sql = "SELECT u.user_id, u.username, u.email, u.role
-        FROM users u 
-        LEFT JOIN employee_details e ON u.user_id = e.user_id 
-        WHERE e.employee_id IS NULL 
-        AND u.role IN ('manager', 'employee')
-        ORDER BY u.user_id DESC";
-$standalone_accounts = fetchAll($sql);
-
-// Add these to our counts
-foreach ($standalone_accounts as $account) {
-    if ($account['role'] === 'manager') {
-        $managers++;
-    } elseif ($account['role'] === 'employee') {
-        $regular_employees++;
-    }
-    $active_accounts++;
-}
+// Get attendance records
+$sql = "SELECT a.*, e.full_name as employee_name 
+        FROM attendance a 
+        JOIN employee_details e ON a.employee_id = e.employee_id 
+        ORDER BY a.date DESC, e.full_name";
+$attendance_records = fetchAll($sql);
 ?>
 
 <!DOCTYPE html>
@@ -66,53 +36,66 @@ foreach ($standalone_accounts as $account) {
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- DataTables CSS -->
-    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    
     <style>
-        .card {
-            border-radius: 15px;
+        .nav-tabs .nav-link {
+            color: #6c757d;
             border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            border-bottom: 3px solid transparent;
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
         }
-        .card:hover {
-            transform: translateY(-5px);
+        
+        .nav-tabs .nav-link:hover {
+            border-bottom-color: rgba(13, 110, 253, 0.3);
+            color: #0d6efd;
         }
-        .stat-card {
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            border-bottom-color: #0d6efd;
+            background: none;
         }
-        .stat-card h2 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0;
-        }
-        .stat-card h5 {
-            font-size: 1.1rem;
-            margin: 0;
-            opacity: 0.9;
-        }
+        
         .table-card {
             border-radius: 15px;
             overflow: hidden;
         }
+        
         .action-buttons .btn {
             padding: 0.375rem 0.75rem;
             font-size: 0.9rem;
         }
+        
         .badge {
             padding: 0.5em 0.8em;
             font-weight: 500;
         }
+        
         .role-badge {
             font-size: 0.8rem;
             padding: 0.25em 0.5em;
+        }
+        
+        .status-present {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-absent {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-late {
+            background-color: #fff3cd;
+            color: #856404;
         }
     </style>
 </head>
@@ -141,164 +124,168 @@ foreach ($standalone_accounts as $account) {
                 </div>
             <?php endif; ?>
             
-            <!-- Header -->
+            <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0">Employee Management</h2>
-                <?php if (hasPermission('manage_employees')): ?>
-                    <div>
-                    
-                        <!--<a href="../users/create_staff.php" class="btn btn-success">
-                            <i class="bi bi-person-plus me-2"></i>Create Staff Account
-                        </a>-->
-                    </div>
-                <?php endif; ?>
-            </div>
-            
-            <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-primary shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Employees</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_employees; ?></div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-people fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active Accounts</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $active_accounts; ?></div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-person-check fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-info shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Managers</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $managers; ?></div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-person-workspace fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-warning shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Regular Employees</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $regular_employees; ?></div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-person-badge fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="btn-group">
+                    <a href="add.php" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-2"></i>Add Employee
+                    </a>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#recordAttendanceModal">
+                        <i class="bi bi-calendar-check me-2"></i>Record Attendance
+                    </button>
                 </div>
             </div>
             
-            <!-- Employees Table -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Employee List</h6>
-                    <?php if (hasPermission('manage_employees')): ?>
-                        <div>
-                            <a href="add.php" class="btn btn-primary">
-                                <i class="bi bi-plus-lg me-2"></i>Add New Employee
-                            </a>
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-4" id="employeeTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="employees-tab" data-bs-toggle="tab" data-bs-target="#employees" type="button" role="tab">
+                        <i class="bi bi-people me-2"></i>Employees
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab">
+                        <i class="bi bi-calendar-check me-2"></i>Attendance
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content" id="employeeTabsContent">
+                <!-- Employees Tab -->
+                <div class="tab-pane fade show active" id="employees" role="tabpanel">
+                    <div class="card table-card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="employeesTable" class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Position</th>
+                                            <th>Department</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($employees as $employee): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($employee['full_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                <td><?php echo htmlspecialchars($employee['department']); ?></td>
+                                                <td><?php echo htmlspecialchars($employee['email']); ?></td>
+                                                <td>
+                                                    <?php if ($employee['user_id']): ?>
+                                                        <span class="badge bg-<?php echo $employee['user_status'] === 'active' ? 'success' : 'danger'; ?>">
+                                                            <?php echo ucfirst($employee['user_status']); ?>
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-warning">No Account</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group action-buttons">
+                                                        <?php if (!$employee['user_id']): ?>
+                                                            <a href="/stock/src/modules/users/create_staff.php?employee_id=<?php echo $employee['employee_id']; ?>" 
+                                                               class="btn btn-sm btn-info" 
+                                                               title="Create User Account">
+                                                                <i class="bi bi-person-plus"></i>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                        <button type="button" class="btn btn-sm btn-danger delete-employee"
+                                                                data-id="<?php echo $employee['employee_id']; ?>"
+                                                                data-name="<?php echo htmlspecialchars($employee['full_name']); ?>">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    <?php endif; ?>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="employeesTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Full Name</th>
-                                    <th>Department</th>
-                                    <th>Position</th>
-                                    <th>Account Status</th>
-                                    <th>Role</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($employees as $employee): ?>
-                                <tr>
-                                    <td><?php echo $employee['employee_id']; ?></td>
-                                    <td><?php echo htmlspecialchars($employee['full_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($employee['department']); ?></td>
-                                    <td><?php echo htmlspecialchars($employee['position']); ?></td>
-                                    <td>
-                                        <?php if (!empty($employee['username'])): ?>
-                                            <?php if ($employee['status'] === 'active'): ?>
-                                                <span class="badge bg-success">Active</span>
-                                            <?php else: ?>
-                                                <span class="badge bg-danger">Inactive</span>
-                                            <?php endif; ?>
-                                        <?php else: ?>
-                                            <span class="badge bg-warning">No Account</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if (!empty($employee['role'])): ?>
-                                            <span class="badge bg-primary"><?php echo ucfirst($employee['role']); ?></span>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary">N/A</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if (empty($employee['username']) && hasPermission('manage_employees')): ?>
-                                            <a href="../users/create_staff.php?employee_id=<?php echo $employee['employee_id']; ?>" 
-                                               class="btn btn-sm btn-success" title="Create Staff Account">
-                                                <i class="bi bi-person-plus"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                        <?php if (hasPermission('manage_employees')): ?>
-                                            <a href="edit.php?id=<?php echo $employee['employee_id']; ?>" 
-                                               class="btn btn-sm btn-primary" title="Edit Employee">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-danger" title="Delete Employee"
-                                                    onclick="confirmDelete(<?php echo $employee['employee_id']; ?>)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                
+                <!-- Attendance Tab -->
+                <div class="tab-pane fade" id="attendance" role="tabpanel">
+                    <div class="card table-card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="attendanceTable" class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Employee</th>
+                                            <th>Time In</th>
+                                            <th>Time Out</th>
+                                            <th>Status</th>
+                                            <th>Notes</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($attendance_records as $record): ?>
+                                            <tr>
+                                                <td><?php echo date('M d, Y', strtotime($record['date'])); ?></td>
+                                                <td><?php echo htmlspecialchars($record['employee_name']); ?></td>
+                                                <td>
+                                                    <?php 
+                                                    echo $record['time_in'] 
+                                                        ? date('h:i A', strtotime($record['time_in'])) 
+                                                        : '-'; 
+                                                    ?>
+                                                </td>
+                                                <td>
+                                                    <?php 
+                                                    echo $record['time_out'] 
+                                                        ? date('h:i A', strtotime($record['time_out'])) 
+                                                        : '-'; 
+                                                    ?>
+                                                </td>
+                                                <td>
+                                                    <span class="badge status-<?php echo $record['status']; ?>">
+                                                        <?php echo ucfirst($record['status']); ?>
+                                                    </span>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($record['notes'] ?? ''); ?></td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-sm btn-info edit-attendance" 
+                                                                data-id="<?php echo $record['attendance_id']; ?>"
+                                                                data-employee="<?php echo $record['employee_id']; ?>"
+                                                                data-date="<?php echo $record['date']; ?>"
+                                                                data-timein="<?php echo $record['time_in'] ? date('H:i', strtotime($record['time_in'])) : ''; ?>"
+                                                                data-timeout="<?php echo $record['time_out'] ? date('H:i', strtotime($record['time_out'])) : ''; ?>"
+                                                                data-status="<?php echo $record['status']; ?>"
+                                                                data-notes="<?php echo htmlspecialchars($record['notes'] ?? ''); ?>">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-danger delete-attendance"
+                                                                data-id="<?php echo $record['attendance_id']; ?>"
+                                                                data-employee="<?php echo htmlspecialchars($record['employee_name']); ?>"
+                                                                data-date="<?php echo date('M d, Y', strtotime($record['date'])); ?>">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Include your existing modals here -->
+    <?php include 'modals/attendance_modals.php'; ?>
     
     <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -310,27 +297,82 @@ foreach ($standalone_accounts as $account) {
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <script>
         $(document).ready(function() {
+            // Initialize DataTables
             $('#employeesTable').DataTable({
-                "order": [[0, "desc"]]
+                order: [[0, 'asc']], // Sort by name ascending
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
             });
             
-            // Initialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
+            $('#attendanceTable').DataTable({
+                order: [[0, 'desc']], // Sort by date descending
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
+            });
+            
+            // Handle tab changes
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                // Adjust DataTables columns when switching tabs
+                $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+            });
+            
+            // Status change handlers
+            $('#status, #edit_status').change(function() {
+                const status = $(this).val();
+                const prefix = $(this).attr('id').startsWith('edit_') ? 'edit_' : '';
+                if (status === 'absent') {
+                    $(`#${prefix}time_in, #${prefix}time_out`).val('').prop('disabled', true);
+                } else {
+                    $(`#${prefix}time_in, #${prefix}time_out`).prop('disabled', false);
+                }
+            });
+            
+            // Employee edit button handler
+            $('.edit-employee').click(function() {
+                // Add your employee edit logic here
+            });
+            
+            // Employee delete button handler
+            $('.delete-employee').click(function() {
+                // Add your employee delete logic here
+            });
+            
+            // Attendance edit button handler
+            $('.edit-attendance').click(function() {
+                const id = $(this).data('id');
+                const employee = $(this).data('employee');
+                const date = $(this).data('date');
+                const timeIn = $(this).data('timein');
+                const timeOut = $(this).data('timeout');
+                const status = $(this).data('status');
+                const notes = $(this).data('notes');
+                
+                $('#edit_attendance_id').val(id);
+                $('#edit_employee_id').val(employee);
+                $('#edit_date').val(date);
+                $('#edit_time_in').val(timeIn);
+                $('#edit_time_out').val(timeOut);
+                $('#edit_status').val(status);
+                $('#edit_notes').val(notes);
+                
+                $('#editAttendanceModal').modal('show');
+            });
+            
+            // Attendance delete button handler
+            $('.delete-attendance').click(function() {
+                const id = $(this).data('id');
+                const employee = $(this).data('employee');
+                const date = $(this).data('date');
+                
+                $('#delete_attendance_id').val(id);
+                $('#delete_employee_name').text(employee);
+                $('#delete_attendance_date').text(date);
+                
+                $('#deleteAttendanceModal').modal('show');
             });
         });
-        
-        function confirmDelete(employeeId) {
-            if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
-                window.location.href = 'delete.php?id=' + employeeId;
-            }
-        }
     </script>
 </body>
-</html> 
+</html>

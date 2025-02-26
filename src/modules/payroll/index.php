@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_payroll'])) 
         $payroll_id = insert('payroll', $payroll_data);
         
         $_SESSION['success'] = "Payroll generated successfully!";
-        header("Location: payroll.php");
+        header("Location: /stock/src/modules/payroll/index.php"); // Updated redirection URL
         exit();
     } catch (Exception $e) {
         $_SESSION['error'] = "Error: " . $e->getMessage();
@@ -75,7 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_payment'])) {
         update('payroll', $update_data, 'payroll_id = ?', [$payroll_id]);
         
         $_SESSION['success'] = "Payment processed successfully!";
-        header("Location: payroll.php");
+        // Redirect to payroll page to show updated status
+        header("Location: /stock/src/modules/payroll/index.php"); // Updated redirection URL
         exit();
     } catch (Exception $e) {
         $_SESSION['error'] = "Error: " . $e->getMessage();
@@ -617,6 +618,12 @@ foreach ($payroll_records as $record) {
                 $('#processPaymentModal').modal('show');
             });
             
+            $('#processPaymentModal form').on('submit', function() {
+                setTimeout(function() {
+                    location.reload();
+                }, 1000); // Refresh page after 1 second
+            });
+            
             // Print payslip
             $('.print-payslip, #print_from_view').click(function() {
                 const id = $(this).data('id');
@@ -625,4 +632,4 @@ foreach ($payroll_records as $record) {
         });
     </script>
 </body>
-</html> 
+</html>
