@@ -192,12 +192,101 @@ $page_title = $user ? "Edit Staff Account" : "Create Staff Account";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexInvent - <?php echo $page_title; ?></title>
-    
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+
+        h1, h2, h3, h4, h5, .card-title {
+            font-family: var(--font-primary);
+            font-weight: 600;
+        }
+
+        .card {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            background: linear-gradient(145deg, var(--primary-color), var(--primary-dark));
+            border-radius: 20px 20px 0 0 !important;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            font-family: var(--font-secondary);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            font-family: var(--font-primary);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: #9ca3af;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #6b7280;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            font-family: var(--font-secondary);
+        }
+
+        .invalid-feedback {
+            font-family: var(--font-secondary);
+            font-size: 0.85rem;
+        }
+    </style>
 </head>
 <body>
     <?php include '../../includes/sidebar.php'; ?>
@@ -313,4 +402,4 @@ $page_title = $user ? "Edit Staff Account" : "Create Staff Account";
     <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>

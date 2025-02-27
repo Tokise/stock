@@ -54,51 +54,72 @@ $orderItems = fetchAll($sql, [$sale_id]);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --font-family-sans-serif: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-family-sans-serif);
+            letter-spacing: -0.1px;
+        }
+        
+        h2, h5 {
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        
+        .card {
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
         .order-header {
             background-color: #f8f9fa;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
         }
+        
         .status-timeline {
-            display: flex;
-            justify-content: space-between;
-            margin: 30px 0;
-            position: relative;
+            padding: 1rem 0;
         }
-        .status-timeline::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background-color: #e9ecef;
-            z-index: 1;
-        }
-        .status-step {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-        }
+        
         .status-step-icon {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            background-color: #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
+            width: 40px;
+            height: 40px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
         }
-        .status-step.active .status-step-icon {
-            background-color: #0d6efd;
-            color: white;
-        }
+        
         .status-step.completed .status-step-icon {
-            background-color: #198754;
-            color: white;
+            transform: scale(1.1);
+        }
+        
+        .status-step-label {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            margin-top: 0.75rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 0.5em 0.75em;
+        }
+        
+        .btn {
+            font-weight: 500;
+            letter-spacing: -0.1px;
+            padding: 0.5rem 1rem;
         }
     </style>
 </head>
@@ -361,4 +382,4 @@ function getPaymentStatusBadgeClass($status) {
 ?>
 
 </body>
-</html> 
+</html>

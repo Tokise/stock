@@ -36,6 +36,57 @@ $products = fetchAll("SELECT p.*, c.name as category_name
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family-sans-serif: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-family-sans-serif);
+            letter-spacing: -0.1px;
+        }
+        
+        h2, h5 {
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        
+        .card {
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn {
+            font-weight: 500;
+            letter-spacing: -0.1px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .select2-container--bootstrap-5 .select2-selection {
+            font-family: var(--font-family-sans-serif);
+        }
+    </style>
 </head>
 <body>
 
@@ -505,4 +556,4 @@ function saveDraft() {
 </script>
 
 </body>
-</html> 
+</html>

@@ -87,7 +87,132 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4f46e5 !important;
+            --primary-dark: #4338ca !important;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: #f9fafb !important;
+            color: #111827 !important;
+        }
+
+        h1, h2, h3, h4, h5, .card-title {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            color: #111827 !important;
+        }
+
+        .main-content {
+            padding: 2rem !important;
+        }
+
+        .card {
+            border-radius: 1rem !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        }
+
+        .card-header {
+            background: linear-gradient(145deg, var(--primary-color), var(--primary-dark)) !important;
+            border-radius: 1rem 1rem 0 0 !important;
+            padding: 1.5rem !important;
+            border-bottom: none !important;
+        }
+
+        .card-header h4 {
+            color: white !important;
+            margin-bottom: 0 !important;
+            font-size: 1.25rem !important;
+        }
+
+        .card-body {
+            padding: 2rem !important;
+        }
+
+        .form-label {
+            font-weight: 500 !important;
+            color: #4b5563 !important;
+            margin-bottom: 0.5rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .form-control {
+            border-radius: 0.5rem !important;
+            border: 1px solid #d1d5db !important;
+            padding: 0.625rem 1rem !important;
+            font-size: 0.875rem !important;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+        }
+
+        .form-control.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: none !important;
+        }
+
+        .invalid-feedback {
+            font-size: 0.75rem !important;
+            color: #ef4444 !important;
+            margin-top: 0.25rem !important;
+        }
+
+        .btn {
+            font-weight: 500 !important;
+            padding: 0.625rem 1.25rem !important;
+            border-radius: 0.5rem !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark) !important;
+            border-color: var(--primary-dark) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2) !important;
+        }
+
+        .btn-secondary {
+            background-color: #9ca3af !important;
+            border-color: #9ca3af !important;
+        }
+
+        .btn-secondary:hover {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 6px -1px rgba(107, 114, 128, 0.2) !important;
+        }
+
+        .alert {
+            border-radius: 0.5rem !important;
+            border: none !important;
+            font-size: 0.875rem !important;
+            padding: 1rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+        }
+    </style>
 </head>
+
 <body>
     <?php include '../../includes/sidebar.php'; ?>
     
@@ -176,4 +301,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>

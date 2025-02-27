@@ -412,6 +412,11 @@ function timeAgo($datetime) {
 ?>
 
 <style>
+:root{
+    --primary-color: #4f46e5;
+--primary-dark: #4338ca;
+}
+
 body {
     background-color: #eef2f7;
 }
@@ -421,19 +426,21 @@ body {
     background-color: #eef2f7;
 }
 .card-dashboard {
-    border-radius: 15px;
+    border-radius: 16px;
     border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     background-color: white;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .card-dashboard:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 .stat-icon {
     font-size: 2rem;
     opacity: 0.8;
+    color: #111827;
+
 }
 .card-header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -447,14 +454,12 @@ body {
 .list-group-item:last-child {
     border-bottom: none;
 }
-.card-title {
-    color: #2c3e50;
-    font-weight: 600;
-}
-h2 {
-    color: #2c3e50;
-    font-weight: 600;
-}
+
+h1, h2, h3, h4, h5, .card-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: #111827;
+        }
 
 /* Timeline styles */
 .activity-timeline {
@@ -486,26 +491,46 @@ h2 {
     flex-shrink: 0;
 }
 
-/* Light background colors for icons */
-.bg-light-primary {
-    background-color: rgba(13, 110, 253, 0.1);
-}
+.card {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease-in-out;
+        }
 
-.bg-light-success {
-    background-color: rgba(25, 135, 84, 0.1);
-}
+        .card:hover {
+            transform: translateY(-2px);
+        }
 
-.bg-light-warning {
-    background-color: rgba(255, 193, 7, 0.1);
-}
+        .bg-primary {
+            background: linear-gradient(145deg, var(--primary-color), var(--primary-dark)) !important;
+        }
 
-.bg-light-danger {
-    background-color: rgba(220, 53, 69, 0.1);
-}
+        .bg-success {
+            background: linear-gradient(145deg, #22c55e, #16a34a) !important;
+        }
 
-.bg-light-info {
-    background-color: rgba(13, 202, 240, 0.1);
-}
+        .bg-warning {
+            background: linear-gradient(145deg, #f59e0b, #d97706) !important;
+        }
+
+        .bg-danger {
+            background: linear-gradient(145deg, #ef4444, #dc2626) !important;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+           
+        }
+
+        .card h3, .card h4 {
+            font-weight: 700;
+            margin: 0;
+        }
 
 .activity-content {
     flex-grow: 1;
@@ -526,14 +551,7 @@ h2 {
     padding: 2rem 0;
 }
 
-/* Remove old timeline styles */
-.timeline-container,
-.timeline-item,
-.timeline-dot,
-.timeline-line,
-.timeline-content {
-    /* These styles will be removed */
-}
+
 </style> 
 
 <script>
@@ -611,5 +629,157 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Replace the Sales Chart configuration with:
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const salesGradient = salesCtx.createLinearGradient(0, 0, 0, 400);
+    salesGradient.addColorStop(0, 'rgba(75, 192, 192, 0.5)');
+    salesGradient.addColorStop(1, 'rgba(75, 192, 192, 0.0)');
+
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: <?php echo json_encode($salesChartLabels); ?>,
+            datasets: [{
+                label: 'Monthly Sales ($)',
+                data: <?php echo json_encode($salesChartData); ?>,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: salesGradient,
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: 'rgb(75, 192, 192)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            family: 'Inter',
+                            size: 12
+                        },
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        family: 'Inter',
+                        size: 13
+                    },
+                    bodyFont: {
+                        family: 'Inter',
+                        size: 12
+                    },
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            return '$' + context.raw.toLocaleString();
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Inter',
+                            size: 11
+                        },
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Inter',
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Replace the Categories Chart configuration with:
+    const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+    new Chart(categoriesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: <?php echo json_encode($categoriesLabels); ?>,
+            datasets: [{
+                data: <?php echo json_encode($categoriesData); ?>,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.9)',
+                    'rgba(54, 162, 235, 0.9)',
+                    'rgba(255, 206, 86, 0.9)',
+                    'rgba(75, 192, 192, 0.9)',
+                    'rgba(153, 102, 255, 0.9)'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        font: {
+                            family: 'Inter',
+                            size: 12
+                        },
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        family: 'Inter',
+                        size: 13
+                    },
+                    bodyFont: {
+                        family: 'Inter',
+                        size: 12
+                    },
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} products (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
 });
-</script> 
+</script>

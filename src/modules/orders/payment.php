@@ -106,6 +106,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family-sans-serif: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-family-sans-serif);
+            letter-spacing: -0.1px;
+        }
+        
+        h2, h5 {
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        
+        .card {
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 0.5em 0.75em;
+        }
+        
+        .btn {
+            font-weight: 500;
+            letter-spacing: -0.1px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.15);
+        }
+    </style>
 </head>
 <body>
 
@@ -238,4 +294,4 @@ function getPaymentStatusBadgeClass($status) {
 ?>
 
 </body>
-</html> 
+</html>

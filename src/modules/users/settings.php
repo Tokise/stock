@@ -101,79 +101,99 @@ try {
     <title>NexInvent - Account Settings</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+
+        h1, h2, h3, h4, h5, .card-title {
+            font-family: var(--font-primary);
+            font-weight: 600;
+        }
+
         .profile-header {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            background: linear-gradient(145deg, var(--primary-color), var(--primary-dark));
             color: white;
             padding: 2.5rem;
-            border-radius: 15px;
+            border-radius: 20px;
             margin-bottom: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.1);
         }
+
         .profile-info {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 1.5rem;
             margin-top: 1.5rem;
         }
+
         .profile-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem;
+            backdrop-filter: blur(8px);
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1rem;
+            transition: transform 0.2s ease;
         }
-        .profile-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            margin-right: 1rem;
+
+        .profile-item:hover {
+            transform: translateY(-3px);
         }
-        .profile-text {
-            flex: 1;
+
+        .settings-card {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            background: white;
+            overflow: hidden;
         }
-        .profile-label {
-            font-size: 0.75rem;
-            opacity: 0.8;
-            margin-bottom: 0.25rem;
-        }
-        .profile-value {
-            font-weight: 600;
+
+        .form-control {
+            font-family: var(--font-secondary);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
             font-size: 0.95rem;
         }
-        .settings-card {
-            border-radius: 15px;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .input-group-text {
+            border-radius: 12px;
+            background-color: #f9fafb;
+        }
+
+        .btn {
+            font-family: var(--font-primary);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
             border: none;
         }
-        .settings-card .card-header {
-            background: white;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            padding: 1.5rem;
-        }
-        .form-control {
-            padding: 0.8rem 1rem;
-            border-radius: 10px;
-        }
-        .form-control:focus {
-            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
-        }
-        .btn-primary {
-            padding: 0.8rem 2rem;
-            border-radius: 10px;
-        }
-        .icon-box {
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.2);
         }
     </style>
 </head>

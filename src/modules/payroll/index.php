@@ -134,51 +134,200 @@ foreach ($payroll_records as $record) {
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     
+    <!-- Add these before the existing styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            --primary-color: #4f46e5 !important;
+            --primary-dark: #4338ca !important;
+            --success-color: #22c55e !important;
+            --warning-color: #f59e0b !important;
+            --danger-color: #ef4444 !important;
+            --info-color: #3b82f6 !important;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: #f9fafb !important;
+            color: #1f2937 !important;
+        }
+
+        h1, h2, h3, h4, h5, h6, .modal-title {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            color: #111827 !important;
+        }
+
         .payroll-stats {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background-color: #ffffff !important;
+            border-radius: 1rem !important;
+            padding: 1.5rem !important;
+            margin-bottom: 2rem !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
         }
-        
+
         .stat-card {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            height: 100%;
-            transition: transform 0.2s;
+            background: linear-gradient(145deg, #ffffff, #f8fafc) !important;
+            border-radius: 1rem !important;
+            padding: 1.5rem !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+            height: 100% !important;
+            transition: all 0.3s ease !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
         }
-        
+
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
         }
-        
+
         .stat-icon {
-            font-size: 2rem;
-            opacity: 0.8;
+            font-size: 2.5rem !important;
+            opacity: 0.9 !important;
+            margin-bottom: 0.5rem !important;
+            color: #111827 !important;
         }
-        
+
         .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 1.75rem !important;
+            font-weight: 700 !important;
+            color: #111827 !important;
+            margin-bottom: 0.25rem !important;
         }
-        
+
         .stat-label {
-            color: #6c757d;
-            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif !important;
+            color: #111827 !important;
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            
         }
-        
+
+        .card {
+            border-radius: 1rem !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .card-header {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            padding: 1.5rem !important;
+        }
+
+        .bg-primary {
+            background: linear-gradient(145deg, var(--primary-color), var(--primary-dark)) !important;
+        }
+
+        .bg-success {
+            background: linear-gradient(145deg, #22c55e, #16a34a) !important;
+        }
+
+        .bg-warning {
+            background: linear-gradient(145deg, #f59e0b, #d97706) !important;
+        }
+
+        .bg-danger {
+            background: linear-gradient(145deg, #ef4444, #dc2626) !important;
+        }
+
+        .table thead th {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            font-size: 0.75rem !important;
+            letter-spacing: 0.05em !important;
+            background-color: #f8fafc !important;
+            padding: 1rem !important;
+            color: #4b5563 !important;
+        }
+
+        .table tbody td {
+            padding: 1rem !important;
+            vertical-align: middle !important;
+            color: #1f2937 !important;
+        }
+
+        .badge {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+            padding: 0.5em 1em !important;
+            border-radius: 9999px !important;
+        }
+
         .badge-pending {
-            background-color: #ffc107;
-            color: #212529;
+            background-color: var(--warning-color) !important;
+            color: #000000 !important;
         }
-        
+
         .badge-paid {
-            background-color: #28a745;
-            color: #fff;
+            background-color: var(--success-color) !important;
+            color: #ffffff !important;
         }
+
+        .btn {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+            border-radius: 0.5rem !important;
+            padding: 0.625rem 1.25rem !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2) !important;
+        }
+
+        .modal-content {
+            border-radius: 1rem !important;
+            border: none !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .modal-header {
+            background-color: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            border-radius: 1rem 1rem 0 0 !important;
+            padding: 1.5rem !important;
+        }
+
+        .modal-footer {
+            background-color: #f8fafc !important;
+            border-top: 1px solid #e2e8f0 !important;
+            border-radius: 0 0 1rem 1rem !important;
+            padding: 1.25rem !important;
+        }
+
+        .form-label {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+            font-size: 0.875rem !important;
+            color: #4b5563 !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .form-control {
+            border-radius: 0.5rem !important;
+            border: 1px solid #d1d5db !important;
+            padding: 0.625rem 1rem !important;
+            font-size: 0.875rem !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+        }
+
+     
     </style>
 </head>
 <body>
@@ -217,7 +366,7 @@ foreach ($payroll_records as $record) {
             <div class="payroll-stats">
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <div class="stat-card">
+                        <div class="stat-card bg-primary">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="stat-value">$<?php echo number_format($current_month_total, 2); ?></div>
@@ -230,7 +379,7 @@ foreach ($payroll_records as $record) {
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <div class="stat-card">
+                        <div class="stat-card bg-warning">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="stat-value">$<?php echo number_format($total_pending, 2); ?></div>
@@ -243,7 +392,7 @@ foreach ($payroll_records as $record) {
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <div class="stat-card">
+                        <div class="stat-card bg-success">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="stat-value">$<?php echo number_format($total_paid, 2); ?></div>

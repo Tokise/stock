@@ -37,10 +37,105 @@ $categories = fetchAll($sql);
     <title>NexInvent - Category Management</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    
+    <style>
+        /* Override any conflicting styles */
+        :root {
+            --primary-color: #4f46e5 !important;
+            --primary-dark: #4338ca !important;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: #f9fafb !important;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600 !important;
+            
+        }   
+           
+        
+        .main-content {
+            padding: 2rem !important;
+        }
+
+        .card {
+            border-radius: 1rem !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+            background-color: white !important;
+        }
+
+        .table {
+            font-size: 0.875rem !important;
+        }
+
+        .table thead th {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            font-size: 0.75rem !important;
+            letter-spacing: 0.05em !important;
+            background-color: #f8fafc !important;
+            padding: 1rem !important;
+            border-bottom: 2px solid #e2e8f0 !important;
+        }
+
+        .table tbody td {
+            padding: 1rem !important;
+            vertical-align: middle !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark) !important;
+            border-color: var(--primary-dark) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .modal-content {
+            border-radius: 1rem !important;
+            border: none !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .modal-header {
+            background-color: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            border-radius: 1rem 1rem 0 0 !important;
+            padding: 1.5rem !important;
+        }
+
+        .modal-footer {
+            background-color: #f8fafc !important;
+            border-top: 1px solid #e2e8f0 !important;
+            border-radius: 0 0 1rem 1rem !important;
+            padding: 1.25rem !important;
+        }
+
+        .form-control {
+            border-radius: 0.5rem !important;
+            border: 1px solid #d1d5db !important;
+            padding: 0.625rem 1rem !important;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+        }
+      
+    </style>
 </head>
 <body>
 
@@ -160,11 +255,12 @@ $categories = fetchAll($sql);
 
 <?php include '../../includes/footer.php'; ?>
 
+
 <script>
 $(document).ready(function() {
     // Initialize DataTable
     $('#categoriesTable').DataTable({
-        "order": [[0, "asc"]],
+        "order": [[1, "asc"]],
         "pageLength": 25
     });
 });
@@ -283,4 +379,4 @@ function deleteCategory(categoryId) {
 </script>
 
 </body>
-</html> 
+</html>

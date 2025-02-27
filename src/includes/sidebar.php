@@ -123,8 +123,8 @@ if (!function_exists('isPathActive')) {
                 <a href="/stock/src/modules/dashboard/index.php" class="sidebar-link <?php echo isPathActive('dashboard') ? 'active' : ''; ?>">
                     <i class="bi bi-speedometer2 me-2"></i> Dashboard
                 </a>
-                <a href="/stock/src/modules/inventory/index.php" class="sidebar-link <?php echo isPathActive('inventory') ? 'active' : ''; ?>">
-                    <i class="bi bi-box-seam me-2"></i> Inventory
+                <a href="/stock/src/modules/stock/index.php" class="sidebar-link <?php echo isPathActive('stock') || isPathActive('movements') ? 'active' : ''; ?>">
+                    <i class="bi bi-box-seam me-2"></i> Stock
                 </a>
                 <?php if ($_SESSION['role'] !== 'employee'): ?>
                 <a href="/stock/src/modules/orders/create.php" class="sidebar-link <?php echo isPathActive('orders') ? 'active' : ''; ?>">
@@ -148,7 +148,7 @@ if (!function_exists('isPathActive')) {
             </nav>
         </div>
 
-        <?php if ($_SESSION['role'] !== 'employee'): ?>
+        <?php if ($_SESSION['role'] !== 'employee' && $_SESSION['role'] !== 'manager'): ?>
         <div class="nav-section">
             <div class="nav-header">Management</div>
             <nav>

@@ -53,6 +53,145 @@ $revenue = [
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Add these new Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+
+        h1, h2, h3, h4, h5, .card-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .card {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .bg-primary {
+            background: linear-gradient(145deg, var(--primary-color), var(--primary-dark)) !important;
+        }
+
+        .bg-success {
+            background: linear-gradient(145deg, #22c55e, #16a34a) !important;
+        }
+
+        .bg-warning {
+            background: linear-gradient(145deg, #f59e0b, #d97706) !important;
+        }
+
+        .bg-danger {
+            background: linear-gradient(145deg, #ef4444, #dc2626) !important;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .card h3, .card h4 {
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .table {
+            font-size: 0.875rem;
+        }
+
+        .table thead th {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            background-color: #f8fafc;
+            padding: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .badge {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            padding: 0.5em 0.75em;
+            border-radius: 0.375rem;
+        }
+
+        .btn-group .btn {
+            border-radius: 0.5rem;
+            margin: 0 0.125rem;
+            padding: 0.375rem 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-group .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
+    
+
+        /* SweetAlert2 customization */
+        .swal2-popup {
+            font-family: 'Inter', sans-serif;
+            border-radius: 1rem;
+        }
+
+        .swal2-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+
+        .swal2-confirm, .swal2-cancel {
+            border-radius: 0.5rem !important;
+            font-weight: 500 !important;
+            padding: 0.625rem 1.25rem !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -106,22 +245,6 @@ $revenue = [
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Quick Actions</h5>
-                        <div class="d-flex gap-2">
-                            <a href="../orders/view.php" class="btn btn-outline-primary">
-                                <i class="bi bi-cart"></i> View All Orders
-                            </a>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Recent Sales Table -->
         <div class="card">
@@ -339,4 +462,4 @@ function getPaymentStatusBadgeClass($status) {
 </script>
 
 </body>
-</html> 
+</html>

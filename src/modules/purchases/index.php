@@ -26,6 +26,126 @@ requirePermission('manage_purchases');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4f46e5 !important;
+            --primary-dark: #4338ca !important;
+            --success-color: #22c55e !important;
+            --warning-color: #f59e0b !important;
+            --danger-color: #ef4444 !important;
+            --info-color: #3b82f6 !important;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: #f9fafb !important;
+            color: #1f2937 !important;
+        }
+
+        h1, h2, h3, h4, h5, .modal-title {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            color: #111827 !important;
+        }
+
+        .card {
+            border-radius: 1rem !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+            transition: transform 0.2s ease-in-out !important;
+        }
+
+        .card:hover {
+            transform: translateY(-2px) !important;
+        }
+
+        .btn {
+            font-weight: 500 !important;
+            border-radius: 0.5rem !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark) !important;
+            border-color: var(--primary-dark) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2) !important;
+        }
+
+        .table {
+            font-size: 0.875rem !important;
+        }
+
+        .table thead th {
+            background-color: #f8fafc !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            font-size: 0.75rem !important;
+            letter-spacing: 0.05em !important;
+            padding: 1rem !important;
+            border-bottom: 2px solid #e2e8f0 !important;
+        }
+
+        .table tbody td {
+            padding: 1rem !important;
+            vertical-align: middle !important;
+        }
+
+        .badge {
+            font-weight: 500 !important;
+            padding: 0.5em 0.75em !important;
+            border-radius: 0.375rem !important;
+        }
+
+        .modal-content {
+            border-radius: 1rem !important;
+            border: none !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .modal-header {
+            background-color: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            border-radius: 1rem 1rem 0 0 !important;
+            padding: 1.5rem !important;
+        }
+
+        .modal-footer {
+            background-color: #f8fafc !important;
+            border-top: 1px solid #e2e8f0 !important;
+            border-radius: 0 0 1rem 1rem !important;
+            padding: 1.25rem !important;
+        }
+
+        .form-label {
+            font-weight: 500 !important;
+            color: #4b5563 !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        
+
+      
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .main-content {
+            padding: 2rem !important;
+        }
+
+      
+    </style>
 </head>
 <body>
 
@@ -155,7 +275,7 @@ requirePermission('manage_purchases');
 $(document).ready(function() {
     // Initialize DataTable
     $('#purchasesTable').DataTable({
-        "order": [[2, "desc"]],
+        "order": [[1, "desc"]],
         "pageLength": 25
     });
 });
@@ -213,4 +333,4 @@ function deletePurchase(poNumber) {
 </script>
 
 </body>
-</html> 
+</html>

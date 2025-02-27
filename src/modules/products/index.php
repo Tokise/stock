@@ -43,9 +43,127 @@ $low_stock_count = fetchValue("SELECT COUNT(*) FROM products WHERE quantity_in_s
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <style>
-        .stock-warning { color: #dc3545; }
-        .stock-ok { color: #198754; }
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   <style>
+       /* Override any conflicting styles */
+       :root {
+           --primary-dark: #4338ca ;
+           --primary-color: #4f46e5 ;
+        }
+
+        body {
+            background-color: #f9fafb ;
+            font-family: 'Inter', sans-serif ;
+        }
+        
+        h1, h2, h3, h4, h5, .card-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+.card {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+           
+        }
+
+        .card h3, .card h4 {
+            font-weight: 700;
+            margin: 0;
+        }
+           
+        
+        .main-content {
+            padding: 2rem ;
+        }
+
+        .table {
+            font-size: 0.875rem;
+        }
+
+        .table thead th {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            background-color: #f8fafc;
+            padding: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+      
+        .btn-primary {
+            background-color: var(--primary-color) ;
+            border-color: var(--primary-color) ;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark) ;
+            border-color: var(--primary-dark) ;
+            transform: translateY(-1px) ;
+        }
+
+        .modal-content {
+            border-radius: 1rem ;
+            border: none ;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) ;
+        }
+
+        .modal-header {
+            background-color: #f8fafc ;
+            border-bottom: 1px solid #e2e8f0 ;
+            border-radius: 1rem 1rem 0 0 ;
+            padding: 1.5rem ;
+        }
+
+        .modal-footer {
+            background-color: #f8fafc ;
+            border-top: 1px solid #e2e8f0 ;
+            border-radius: 0 0 1rem 1rem ;
+            padding: 1.25rem ;
+        }
+
+ 
+        .bg-primary {
+            background: linear-gradient(145deg, var(--primary-color), var(--primary-dark)) !important;
+        }
+
+        .bg-success {
+            background: linear-gradient(145deg, #22c55e, #16a34a) !important;
+        }
+
+        .bg-warning {
+            background: linear-gradient(145deg, #f59e0b, #d97706) !important;
+        }
+
+        .bg-danger {
+            background: linear-gradient(145deg, #ef4444, #dc2626) !important;
+        }
+        
+
+      
+
     </style>
 </head>
 <body>
@@ -71,26 +189,26 @@ $low_stock_count = fetchValue("SELECT COUNT(*) FROM products WHERE quantity_in_s
         <!-- Statistics Cards -->
         <div class="row g-4 mb-4">
             <div class="col-md-3">
-                <div class="card">
+                <div class="card bg-primary text-white">
                     <div class="card-body">
                         <h5 class="card-title">Total Products</h5>
-                        <h3><?php echo count($products); ?></h3>
+                        <h3 class="mb-0"><?php echo count($products); ?></h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card bg-danger text-white">
                     <div class="card-body">
                         <h5 class="card-title">Low Stock Items</h5>
-                        <h3 class="text-danger"><?php echo $low_stock_count; ?></h3>
+                        <h3 class="mb-0"><?php echo $low_stock_count; ?></h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card bg-success text-white">
                     <div class="card-body">
                         <h5 class="card-title">Categories</h5>
-                        <h3><?php echo count($categories); ?></h3>
+                        <h3 class="mb-0"><?php echo count($categories); ?></h3>
                     </div>
                 </div>
             </div>
